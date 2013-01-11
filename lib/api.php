@@ -58,26 +58,28 @@ class FastlyAPI {
    * @param $data Data for the body for the post request.
    * @return The response from the server or -1 if an error occurred.
    */
-  function post($url, $do_post = false) {
+  function post($url, $do_post = true) {
 
-    $headers = array("Host: ".$this->host_name, "Accept: */*"); 
+    $url_parts = parse_url($url);
+
     if ($this->api_key) {
       $headers[] = "X-Fastly-Key: " . $this->api_key;
     }
 
     $ch  = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
+    $url = "https://app.fastly.com/purge/" . preg_replace("/^http:\/\//",'', $url);
+    curl_setopt($ch, CURLOPT_URL, $url );
     if ($do_post) {
       curl_setopt($ch, CURLOPT_POST, 1);
+      curl_setopt($ch, CURLOPT_POSTFIELDS, array());
     } else {
-      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PURGE");      
+      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PURGE");
     }
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     $response = curl_exec($ch);
     curl_close($ch);
     return !!$response;
-    
   }
 } 
 
